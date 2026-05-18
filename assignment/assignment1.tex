@@ -1,0 +1,216 @@
+\documentclass[UTF8]{article}
+
+\usepackage{geometry}
+\geometry{a4paper, left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm}
+
+\usepackage{ctex}
+\usepackage{indentfirst}
+\setlength{\parindent}{2em}
+
+\usepackage{setspace}
+\onehalfspacing
+
+\usepackage{titlesec}
+\titleformat{\section}{\bfseries\Large\raggedright}{}{0pt}{}
+\titleformat{\subsection}{\bfseries\large\raggedright}{}{0pt}{}
+\titleformat{\subsubsection}{\bfseries\normalsize\raggedright}{}{0pt}{}
+
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=cyan,
+}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\graphicspath{{media/}}
+
+\usepackage[numbers]{natbib}
+\bibliographystyle{unsrt}
+
+\begin{document}
+
+\title{CSE5023: 深度学习近期进展\\作业1：基础模型综述论文}
+\author{}
+\date{}
+
+\maketitle
+
+\section{作业要求}
+
+\subsection{目标}
+
+本作业的主要目标是深入探索基础模型（Foundation Models）领域，特别关注与您自身研究密切相关的一个方向。本任务旨在培养对主题的更深入理解，鼓励批判性思维，并激发原创研究想法。
+
+\subsection{选题}
+
+选择一个与基础模型更广泛范围密切相关并与您的研究兴趣一致的具体方向。这可以是``X 领域的人工智能''，其中 X 代表您的特定研究重点。
+
+\subsection{内容结构}
+
+\subsubsection{摘要（Abstract）}
+提供综述论文的简洁摘要，概述主要主题、研究发现和贡献。
+
+\subsubsection{引言（Introduction）}
+介绍主题及其与您研究的相关性，以及基础模型在所选领域的重要性。
+
+\subsubsection{文献综述/方法（Literature Review/Methods）}
+对所选主题相关现有文献进行全面综述。讨论先前研究中采用的各种方法、技术和模型。
+
+\subsubsection{讨论（Discussion）}
+分析当前技术水平的优势和劣势，找出研究中的空白并讨论可能的改进领域。
+
+\subsubsection{可能的后续方向（Possible Further Directions）}
+提出可以推进该领域的新研究方向。这些方向应基于您的分析并与您的研究兴趣一致。
+
+\subsubsection{初步实验（Preliminary Experiments，可选）}
+如果适用，包含支持您研究方向的初步实验或模拟结果。
+
+\subsection{长度与格式要求}
+
+\begin{itemize}
+    \item 综述论文至少六页（不含参考文献）
+    \item 遵循标准学术格式，包括正确的引用和参考文献
+\end{itemize}
+
+\subsection{原创性与抄袭政策}
+
+\begin{itemize}
+    \item 综述必须是您自己的作品，严禁直接从任何来源（包括 ChatGPT 或其变体）复制
+    \item 您可以将 ChatGPT 用作语言润色工具，但最终内容必须是原创的，反映您自己的研究思路
+    \item 任何直接从 ChatGPT 或其他来源复制的行为都将被视为抄袭
+    \item 抄袭的后果将根据院系和学校的规章制度处理
+\end{itemize}
+
+\section{评分标准}
+
+本作业满分 80 分，具体分配如下：
+
+\begin{itemize}
+    \item 与您研究方向的关联性：10 分
+    \item 文献综述深度和对方法的理解：15 分
+    \item 讨论与分析质量：15 分
+    \item 提出的后续方向原创性：15 分
+    \item 写作清晰度和展示质量：25 分
+\end{itemize}
+
+此外，报告将通过原创性评估，单独计 20 分。
+
+\section{提交说明}
+
+\subsection{准备提交文件}
+
+\begin{enumerate}
+    \item 收集作业 1 的所有相关文件，包括 LaTeX 源文件（压缩包）和编译后的 PDF 文档
+    \item 确保您的 LaTeX 源文件组织良好且编译无错误
+\end{enumerate}
+
+\subsection{创建 ZIP 压缩包}
+
+将所有文件打包成 ZIP 压缩包，可通过右键点击包含文件的文件夹并选择``压缩''或``发送到 ZIP''选项来完成。
+
+\subsection{ZIP 文件命名}
+
+\begin{itemize}
+    \item 格式：学号\_assignment1.zip
+    \item 例如：如果您的学号是 123456，文件名应为 123456\_assignment1.zip
+    \item 不符合指定格式可能导致提交处理延迟或问题
+\end{itemize}
+
+\subsection{提交平台}
+
+请通过 Blackboard 提交包含所有文件的压缩包。
+
+\section{提交截止日期}
+
+作业 1（所有部分和所有任务）的截止日期为 2026 年 5 月 28 日 23:55（北京时区）。
+
+\newpage
+
+\section{综述论文撰写模板}
+
+下文提供一个详细的综述论文撰写模板，供您参考和填充。
+
+\subsection{标题}
+
+在此处填写您的论文标题
+
+\subsection{作者信息}
+
+\begin{itemize}
+    \item 姓名：
+    \item 学号：
+    \item 专业：
+    \item 邮箱：
+\end{itemize}
+
+\subsection{摘要}
+
+在此处填写摘要（300-500 字）。摘要应包含：
+\begin{itemize}
+    \item 研究背景与目的
+    \item 主要研究内容和方法
+    \item 关键发现和贡献
+    \item 结论和意义
+\end{itemize}
+
+\subsection{关键词}
+
+关键词1、关键词2、关键词3、关键词4、关键词5
+
+\subsection{1 引言}
+
+介绍您所选择的基础模型方向及其研究背景。说明：
+\begin{itemize}
+    \item 该方向的重要性和发展趋势
+    \item 与您研究方向的关联
+    \item 本综述的目标和贡献
+\end{itemize}
+
+\subsection{2 文献综述}
+
+\subsubsection{2.1 基础知识与方法}
+
+介绍该领域的基础概念、核心技术和主要方法。
+
+\subsubsection{2.2 代表性模型/工作}
+
+详细综述该领域的重要模型和工作，按类别或时间线组织。
+
+\subsubsection{2.3 技术演进与创新点}
+
+分析该领域的技术演进过程和主要创新点。
+
+\subsection{3 讨论}
+
+\subsubsection{3.1 当前研究优势}
+
+分析当前技术的主要优势和成功应用。
+
+\subsubsection{3.2 当前研究局限}
+
+讨论当前技术面临的主要挑战和局限性。
+
+\subsubsection{3.3 研究空白与改进方向}
+
+指出当前研究中的空白区域和潜在改进方向。
+
+\subsection{4 未来研究方向}
+
+基于您的分析，提出几个有潜力的未来研究方向，并说明其创新性和可行性。
+
+\subsection{5 结论}
+
+总结本综述的主要内容和贡献，展望该领域的未来发展。
+
+\subsection{参考文献}
+
+\begin{thebibliography}{99}
+    \bibitem{ref1} 作者1, 作者2. 标题. 期刊/会议, 年份.
+    \bibitem{ref2} 作者3, 作者4. 标题. 期刊/会议, 年份.
+\end{thebibliography}
+
+\end{document}
