@@ -1,0 +1,11 @@
+.codex_tmp/
+*.aux
+*.log
+*.out
+*.toc
+*.bbl
+*.blg
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+antenna_ai_review/antenna_ai_review_check.txt

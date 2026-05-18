@@ -1,0 +1,199 @@
+\documentclass[UTF8,a4paper,12pt]{ctexart}
+
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{enumitem}
+
+\geometry{left=2.6cm,right=2.6cm,top=2.6cm,bottom=2.6cm}
+\setstretch{1.35}
+\setlength{\parindent}{2em}
+\setlength{\parskip}{0.25em}
+\hypersetup{colorlinks=true,linkcolor=black,citecolor=black,urlcolor=black}
+
+\title{\textbf{人工智能赋能天线优化设计}}
+\author{学生姓名：\underline{\hspace{4cm}}}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+随着无线通信、卫星互联网、雷达感知和智能终端的发展，天线系统正在从单一阻抗匹配问题转向宽带、高增益、小型化、可重构和多物理场协同的综合设计问题。传统天线优化通常依赖有限元法、矩量法或时域有限差分法等全波电磁仿真，并结合遗传算法、粒子群优化等搜索策略进行反复试错，因此在复杂结构、高维参数和多目标约束下容易面临计算成本高、设计周期长和样本复用困难等问题。近年来，深度学习、机器学习代理模型、空间映射、多保真建模和逆向设计方法为天线优化提供了新的技术路径。本文以“人工智能赋能天线优化设计”为主题，综述神经网络代理模型、基于知识的神经网络、多保真空间映射、逆向设计、拓扑优化和生成式设计等主要研究进展，分析其在降低仿真成本、提升优化效率和支持复杂天线结构设计方面的优势，同时讨论数据依赖、泛化能力、物理一致性和工程可制造性等挑战。进一步地，本文提出物理信息神经网络、天线设计基础模型、主动学习闭环和生成式逆向设计等可能方向。总体来看，人工智能不会简单替代电磁理论与全波仿真，而更可能成为连接物理先验、仿真数据和工程约束的高效设计助手。
+\end{abstract}
+
+\noindent\textbf{关键词：}人工智能；天线优化；深度学习；代理模型；逆向设计；空间映射
+
+\section{引言}
+
+天线是无线通信、雷达探测、卫星导航、物联网和电磁感知系统中的关键器件。随着通信系统向更高频段、更大带宽、更高集成度和更强环境适应性发展，天线设计目标也逐渐从单一指标优化扩展为多指标综合优化。例如，在现代相控阵、超表面天线、可重构天线和小型化终端天线中，设计者不仅需要关注阻抗匹配，还需要同时考虑增益、方向图、轴比、旁瓣电平、交叉极化、扫描角覆盖、结构尺寸、加工误差和散热/力学稳定性等指标。相关研究表明，宽带波束形成、圆极化阵列、可重构超表面和超表面天线等新型结构显著提升了天线性能上限，但也带来了更复杂的设计自由度和更大的计算负担\cite{liu2024cawe,xue2024broadband,marzetta2010noncooperative,sievenpiper2012limits,li2023chiral,li2024reconfigurable,wang2020metantenna,venkateshwaran2022ebg}。
+
+传统天线设计通常依靠电磁理论分析、经验调参和全波仿真验证。有限元法、矩量法和时域有限差分法等数值方法能够提供较准确的电磁场求解结果，是天线设计中不可替代的基础工具\cite{alhaj2023mom,david2023fdtd}。然而，当天线结构包含大量几何变量、多层介质、复杂馈电网络或像素化拓扑时，单次高精度仿真就可能消耗较长时间。如果再叠加遗传算法、粒子群优化或其他全局搜索方法，优化过程往往需要调用数百次甚至更多次全波仿真，导致研发周期显著延长\cite{rahmat2003pso,el2020review}。
+
+人工智能方法的引入为上述问题提供了新的解决思路。机器学习和深度学习模型具有非线性函数逼近能力，可以从已有仿真或测试数据中学习天线几何参数、材料参数、馈电条件与电磁响应之间的映射关系。训练完成后，代理模型能够以远低于全波仿真的成本快速预测天线性能，从而服务于参数扫描、优化迭代和灵敏度分析。与此同时，逆向神经网络可以尝试从目标电磁响应直接推断候选几何结构，空间映射和多保真建模能够将低精度模型与少量高精度样本结合，主动学习则可以在优化过程中动态选择最有价值的仿真样本\cite{sarker2023applications,khan2022review,katkevicius2022trends,tang2026review}。
+
+本文围绕“人工智能赋能天线优化设计”这一主题展开综述。第二节介绍人工智能辅助天线设计中的主要模型与方法，包括神经网络代理模型、基于知识的神经网络、多保真空间映射、逆向设计和拓扑生成。第三节讨论当前技术的优势、局限和研究空白。第四节提出可能的后续研究方向，重点关注物理信息神经网络、天线设计基础模型、主动学习闭环和生成式逆向设计。最后对人工智能与传统电磁设计方法的关系进行总结。
+
+\section{文献综述与方法}
+
+原文第一章主要介绍深度学习与代理建模的基础知识，包括前馈神经网络、基于知识的神经网络、逆向网络以及自适应进化网络等。这些内容本身并不是天线理论介绍，而是为后续“如何用 AI 加速天线优化”提供方法基础。因此，在本文的重组中，不将其作为独立的深度学习教材式章节展开，而是把每类模型都放回天线设计场景中讨论：输入对应天线几何、材料、馈电和阵列参数，输出对应反射系数、增益、轴比、方向图和效率等电磁指标，优化目标则对应宽带化、小型化、高增益、圆极化、多目标折中和多物理场约束。这样处理后，深度学习知识不再是孤立铺垫，而成为解释天线优化流程变化的工具。
+
+\subsection{神经网络代理模型}
+
+代理模型是人工智能赋能天线优化设计中最基础、也最直接的一类方法。其核心思想是用计算代价较低的机器学习模型近似全波电磁仿真器，使优化算法不必在每一次候选结构评估时都调用昂贵的高精度仿真。早期射频与微波领域已经探索了人工神经网络在器件建模中的应用，相关工作表明，多层感知器、径向基函数网络和其他前馈神经网络能够学习复杂微波结构的输入输出关系\cite{zhang2000neural,watson1996emann,watson1999kbann,wang1997kbnn}。在天线设计场景中，模型输入通常包括贴片长度、缝隙宽度、馈电位置、介质厚度、阵元间距、相位权重或像素化几何矩阵；模型输出则可以是反射系数、增益、轴比、方向图、有源单元方向图或效率等电磁指标。
+
+前馈神经网络的优势在于结构清晰、训练过程相对成熟，并且适合处理连续几何参数到连续电磁响应的映射。对于一个已训练好的代理模型，推理时间通常远低于全波仿真时间，因此可以嵌入遗传算法、粒子群优化、贝叶斯优化或梯度优化流程中，快速评估大量候选结构。近年来，深度神经网络进一步提升了高维参数空间的拟合能力，并被用于微波滤波器、阵列天线和复杂互连结构的建模与参数提取\cite{jin2019deep,feng2022ann}。
+
+然而，单纯数据驱动的代理模型也存在明显局限。首先，模型精度高度依赖训练数据的覆盖范围。如果训练样本主要分布在局部参数空间，模型在外推区域可能产生较大误差。其次，天线设计中的电磁响应常具有强非线性、多峰值和频率敏感特征，简单神经网络可能难以同时保持宽频段预测精度和良好的泛化能力。再次，高质量训练数据通常来自全波仿真或实测，而这些数据本身就具有较高成本。因此，代理模型虽然能降低优化阶段的仿真调用次数，却并没有完全消除数据获取问题。
+
+\subsection{基于知识的神经网络与多保真建模}
+
+为缓解数据需求过高的问题，研究者提出了基于知识的神经网络和多保真建模方法。所谓“知识”并不只指人工经验，也包括等效电路、解析近似公式、粗网格仿真、低精度求解器、已有结构库以及物理规律约束。基于知识的神经网络通常将粗模型作为先验信息，再由神经网络学习粗模型与精细模型之间的偏差或映射关系。这种做法能够在保留物理趋势的同时减少高保真样本数量，从而提高样本效率\cite{wang1997kbnn,watson1999kbann,na2017unified,simsek2010recent,ojaroudi2018uwb}。
+
+空间映射是多保真建模中的经典思想。其基本框架是建立一个计算成本较低的粗模型和一个精度较高但成本较高的精细模型，并通过输入映射、输出校正或两者结合的方式，使粗模型在目标设计区域内逼近精细模型响应。Bandler 等对空间映射方法进行了系统总结，指出该方法能够在微波和天线优化中显著减少高精度仿真调用次数\cite{bandler2004space}。Koziel 和 Ogurtsov 也从仿真驱动优化角度讨论了天线设计中的代理建模与空间映射策略\cite{koziel2014antenna}。
+
+在深度学习背景下，空间映射可以与神经网络结合，形成神经网络空间映射模型。具体而言，可以先利用大量低成本粗网格仿真数据训练粗模型代理，再利用少量细网格仿真数据训练映射网络或残差校正网络。这样，低保真数据负责提供全局趋势，高保真数据负责校准关键区域的响应偏差。对于涉及电磁、热、力等多物理场耦合的天线或微波器件，多层多保真映射还可以将“粗网格电磁模型”“细网格电磁模型”和“多物理场模型”串联起来，逐级降低学习难度\cite{zhang2021parallel,zhang2021advanced,yang2025multifidelity}。
+
+这类方法的关键价值在于把“少量昂贵数据”和“大量廉价数据”组织为统一的学习框架。相比直接训练一个高精度黑箱模型，多保真策略更符合工程设计流程：设计者通常先用粗模型快速探索，再在局部区域调用精细仿真确认结果。人工智能模型在其中承担的是误差校正、响应预测和优化加速角色，而不是完全替代电磁仿真。
+
+\subsection{逆向设计与多目标优化}
+
+传统天线设计多为正向流程，即设计者给定几何结构，通过仿真或测量获得电磁响应，再根据响应结果修改结构参数。人工智能逆向设计则尝试反过来建立“目标性能到结构参数”的映射，使模型能够根据期望的频段、反射系数、增益或方向图直接生成候选结构。Gosal 等较早将正向与逆向神经网络用于透射阵天线设计，展示了神经网络在快速设计中的潜力\cite{gosal2016transmitarray}。近年来，深度学习在双频天线、阵列配置和可移动天线等任务中也被用于探索复杂结构与目标响应之间的反向关系\cite{gadhafi2024dualband,lin2025array,shao2025movable}。
+
+逆向设计的难点在于天线设计问题通常不是一一映射。同一组目标性能可能对应多种几何结构，而不同结构又可能在加工复杂度、带宽稳定性和鲁棒性方面差异明显。如果直接训练单一逆向网络，模型可能会在多解空间中平均化，生成物理上不可行或性能不稳定的结构。因此，研究者常采用正向网络辅助、自动编码器、条件生成模型或多分支网络来缓解这一问题。
+
+多目标优化进一步增加了逆向设计难度。现代天线往往需要同时满足阻抗匹配、增益、轴比、旁瓣电平、交叉极化和扫描性能等指标。不同指标可能受不同几何特征控制，甚至存在相互冲突。例如，缩小尺寸可能降低增益，扩展带宽可能影响方向图稳定性。多分支神经网络通过让不同子网络分别提取不同目标相关特征，再在深层进行融合，可以减少多目标之间的特征干扰。已有工作将逆向人工神经网络用于多目标天线设计，并证明分支化结构有助于处理不同电磁指标之间的复杂关系\cite{xiao2021inverse,liu2022lens}。
+
+从课程主题“基础模型更广泛范围”来看，逆向设计也是天线设计基础模型的重要入口。未来若能构建跨频段、跨结构和跨任务的预训练模型，模型便可能根据自然语言设计需求、目标频谱曲线或方向图约束生成多个候选结构，再由全波仿真和工程约束进行筛选。这种流程将从“人手动调参”转向“模型提出候选、人进行物理判断和工程验证”。
+
+\subsection{拓扑优化、主动学习与生成式设计}
+
+随着超表面、像素化天线和复杂阵列的发展，天线优化变量不再局限于少量连续几何参数，而可能扩展为高维离散拓扑。例如，一个像素化辐射贴片可以被表示为由金属/非金属单元组成的二进制矩阵，超表面单元也可以被编码为高维图案。在这类问题中，传统参数扫描几乎不可行，直接训练全连接代理模型也容易受到维度灾难影响。
+
+卷积神经网络适合从像素化结构中提取局部几何特征，因此被用于天线和微波器件拓扑建模。自动编码器可以将高维几何压缩到低维潜在空间，使优化算法在更平滑、更低维的空间中搜索，再通过解码器还原为可实现结构。高斯过程回归则可以在小样本条件下提供预测不确定性，有助于主动学习选择最值得仿真的候选点。代理辅助进化计算的研究表明，机器学习模型可以作为昂贵适应度函数的近似器，在复杂优化中减少真实仿真调用次数\cite{jin2011surrogate,liu2014efficient,wu2024geometry,han2025windload,yang2025cnn}。
+
+生成式模型进一步扩展了天线拓扑设计的想象空间。与传统优化在既定参数化结构中搜索不同，生成对抗网络、变分自动编码器和扩散模型可以在学习已有结构分布后生成新的候选拓扑。相关超表面研究已经展示了生成对抗网络在多功能电磁结构设计中的潜力\cite{an2021gan}。如果将生成模型与电磁仿真器、代理模型和物理约束结合，未来有望形成“生成候选结构--快速代理筛选--高精度仿真验证--反馈更新模型”的闭环设计流程。
+
+主动学习在这一闭环中具有重要作用。由于高精度样本昂贵，模型不应被动等待随机样本，而应根据预测误差、不确定性或优化潜力主动选择样本进行仿真。对于天线设计而言，主动学习可以优先探索性能接近目标、模型不确定性较高或可能突破当前最优解的结构区域，从而以更少样本逼近更优设计。
+
+\section{讨论}
+
+人工智能赋能天线优化设计的首要优势是计算效率。训练完成的代理模型能够以极低成本预测候选结构响应，使优化算法可以在较短时间内评估大量设计方案。对于大规模阵列、超表面结构或多物理场耦合器件，这种效率提升尤其重要。第二个优势是复杂映射能力。深度神经网络能够拟合几何参数与电磁响应之间的强非线性关系，在传统经验公式难以覆盖的复杂结构中表现出较大潜力。第三个优势是设计流程的转变：逆向网络和生成式模型使天线设计不再只是“仿真--调参--再仿真”，而可以逐步转向由模型提出候选结构、由仿真和工程知识验证筛选的新范式。
+
+然而，当前方法仍然存在明显短板。首先是数据成本问题。虽然代理模型可以减少优化阶段的仿真次数，但模型训练本身仍然需要大量样本。对于高频、宽带、多目标和多物理场问题，样本生成成本依旧很高。其次是泛化能力问题。许多模型只在特定天线结构、特定频段或特定参数范围内有效，一旦换成新的拓扑、材料或边界条件，模型可能需要重新采样和训练。第三是物理一致性问题。纯数据驱动模型并不天然满足麦克斯韦方程、边界条件、互易性、能量守恒或可制造性约束，因此可能给出数值上看似合理但物理上不可实现的结果。
+
+可解释性也是工程应用中的重要障碍。天线设计高度依赖物理机制理解，例如电流路径、谐振模式、耦合关系和相位补偿。黑箱神经网络虽然能够给出预测值，却未必能解释为什么某一几何改变会改善轴比或降低旁瓣。对于工程设计者而言，可解释性不仅关系到信任模型，也关系到后续修改、加工容差分析和故障排查。因此，未来 AI 天线设计模型需要从“只追求预测误差低”转向“预测准确、物理一致、可解释、可验证”的综合目标。
+
+此外，生成式设计虽然具有较高创新潜力，但也可能生成难加工、强敏感或缺乏鲁棒性的结构。天线并不是只要仿真结果好就能直接工程应用，还需要考虑加工精度、材料损耗、馈电实现、封装环境和测试误差。因此，人工智能模型应与工程约束共同建模，而不是把天线设计简化为抽象的数学优化问题。
+
+\section{可能的后续方向}
+
+第一，物理信息神经网络是提升模型可信度的重要方向。Raissi 等提出的物理信息神经网络通过在损失函数中嵌入偏微分方程残差，为求解正问题和反问题提供了统一深度学习框架\cite{raissi2019pinn}。在天线设计中，可以将麦克斯韦方程、边界条件、辐射条件和材料本构关系纳入训练过程，使模型不只拟合样本点，而是在更大设计空间内保持物理一致性。相关可微电磁仿真和反演研究也说明，将电磁计算与可微编程结合具有较大潜力\cite{hu2022theory}。
+
+第二，天线设计基础模型值得重点探索。当前大多数 AI 天线模型针对单一结构或单一任务训练，缺少跨任务迁移能力。未来可以构建包含多种天线类型、频段、材料、边界条件和性能指标的大规模数据集，在此基础上训练通用预训练模型。该模型可以作为粗模型、特征提取器、逆向设计初始化器或设计建议生成器，再通过少量任务数据进行微调。这样的基础模型若能实现，将显著提升天线设计知识复用能力。
+
+第三，生成式逆向设计可以推动结构创新。扩散模型、变分自动编码器和生成对抗网络能够学习复杂结构分布，并在目标条件约束下生成候选拓扑。与传统参数化优化相比，生成式设计不局限于人工预设的少数几何变量，更适合探索超表面、像素化天线和异形辐射体等高自由度结构。不过，生成式模型必须与物理约束、加工约束和高精度仿真验证结合，避免生成不可实现的“好看但无效”的结构。
+
+第四，主动学习与仿真闭环将成为工程落地的关键。一个可行流程是：首先用少量样本训练初始代理模型；然后由模型在设计空间中提出高潜力或高不确定性样本；接着调用 HFSS、CST 等仿真软件获得高精度结果；最后将新样本回填训练集并更新模型。该流程可以持续提高模型在目标区域的精度，并避免无效采样。对于多目标天线设计，还可以将帕累托前沿、不确定性和物理约束共同纳入采样策略。
+
+第五，人机协同设计范式需要被重视。人工智能模型擅长快速搜索和模式学习，而人类设计者擅长物理解释、约束判断和工程取舍。未来更合理的工作流并不是让模型完全替代天线工程师，而是让模型成为能够理解目标、检索相似案例、生成候选方案、预测性能并解释关键影响因素的辅助系统。这样的系统更符合天线设计的实际需求，也更容易被工程环境接受。
+
+\section{结论}
+
+人工智能正在推动天线优化设计从依赖经验和反复全波仿真的传统流程，逐步走向数据驱动、模型辅助和物理知识融合的新流程。神经网络代理模型能够降低性能评估成本，多保真空间映射能够提升样本利用效率，逆向设计和生成式模型能够加快候选结构生成，主动学习则为 AI 与仿真软件之间的闭环优化提供了机制。与此同时，当前方法仍面临训练数据昂贵、泛化能力不足、物理一致性不强、可解释性有限和工程约束建模不足等问题。未来，物理信息神经网络、天线设计基础模型、生成式逆向设计和主动学习闭环可能成为该领域的重要发展方向。总体而言，人工智能并不是对电磁理论和仿真工具的替代，而是对传统天线优化设计能力的扩展；只有将数据、物理和工程约束结合起来，AI 才能真正成为可靠的天线设计助手。
+
+\begin{thebibliography}{99}
+
+\bibitem{tang2026review} 汤昊臻, 吴季航, 张伟. 基于深度学习与代理模型的天线优化设计研究进展[J]. AI-VIEW, 2026(1): 49--65.
+
+\bibitem{liu2024cawe} F. Liu, W. Zhou, D. Qin, et al. CAWE-ACNN algorithm for coprime sensor array adaptive beamforming[J]. Sensors, 2024, 24(17): 5454.
+
+\bibitem{xue2024broadband} C. Xue, H. Zhu, S. Zhang, et al. Broadband beamforming weight generation network based on convolutional neural network[J]. IEEE Geoscience and Remote Sensing Letters, 2024, 21: 4501105.
+
+\bibitem{marzetta2010noncooperative} T. L. Marzetta. Noncooperative cellular wireless with unlimited numbers of base station antennas[J]. IEEE Transactions on Wireless Communications, 2010, 9(11): 3590--3600.
+
+\bibitem{sievenpiper2012limits} D. F. Sievenpiper, D. C. Dawson, M. M. Jacob, et al. Experimental validation of performance limits and design guidelines for small antennas[J]. IEEE Transactions on Antennas and Propagation, 2012, 60(1): 8--19.
+
+\bibitem{li2023chiral} Q. Li and H. Zhang. A high-gain circularly polarized antenna array based on a chiral metastructure[J]. IEEE Transactions on Antennas and Propagation, 2023, 71(4): 3033--3041.
+
+\bibitem{li2024reconfigurable} W. Li, H. Guo, X. Wang, et al. A 2-bit reconfigurable metasurface with real-time control for deflection, diffusion, and polarization[J]. IEEE Transactions on Antennas and Propagation, 2024, 72(2): 1521--1531.
+
+\bibitem{wang2020metantenna} J. Wang, Y. Li, Z. Jiang, et al. Metantenna: when metasurface meets antenna again[J]. IEEE Transactions on Antennas and Propagation, 2020, 68(3): 1332--1347.
+
+\bibitem{venkateshwaran2022ebg} S. Venkateshwaran, K. K. Rao, and S. R. Kumbha. Design and implementation of circular polarized patch antenna using EBG structure[C]//IEEE Microwaves, Antennas, and Propagation Conference. IEEE, 2022: 1792--1797.
+
+\bibitem{alhaj2023mom} A. Alhaj Hasan, T. M. Nguyen, S. P. Kuksenko, et al. Wire-grid and sparse MoM antennas: past evolution, present implementation, and future possibilities[J]. Symmetry, 2023, 15(2): 378.
+
+\bibitem{david2023fdtd} D. S. K. David, Y. Jeong, Y. Wu, et al. An analytical antenna modeling of electromagnetic wave propagation in inhomogeneous media using FDTD: a comprehensive study[J]. Sensors, 2023, 23(8): 3896.
+
+\bibitem{rahmat2003pso} Y. Rahmat-Samii, D. Gies, and J. Robinson. Particle swarm optimization (PSO): a novel paradigm for antenna designs[J]. URSI Radio Science Bulletin, 2003, 2003(306): 14--22.
+
+\bibitem{el2020review} H. M. El Misilmani, T. Naous, and S. K. Al Khatib. A review on the design and optimization of antennas using machine learning algorithms and techniques[J]. International Journal of RF and Microwave Computer-Aided Engineering, 2020, 30(10): e22356.
+
+\bibitem{sarker2023applications} N. Sarker, P. Podder, M. R. H. Mondal, et al. Applications of machine learning and deep learning in antenna design, optimization, and selection: a review[J]. IEEE Access, 2023, 11: 103890--103915.
+
+\bibitem{khan2022review} M. M. Khan, S. Hossain, P. Mozumdar, et al. A review on machine learning and deep learning for various antenna design applications[J]. Heliyon, 2022, 8(4): e09317.
+
+\bibitem{katkevicius2022trends} A. Katkevicius, D. Plonis, R. Damasevicius, et al. Trends of microwave devices design based on artificial neural networks: a review[J]. Electronics, 2022, 11(15): 2360.
+
+\bibitem{zhang2000neural} Q. J. Zhang and K. C. Gupta. Neural Networks for RF and Microwave Design[M]. Boston: Artech House, 2000.
+
+\bibitem{watson1996emann} P. M. Watson and K. C. Gupta. EM-ANN models for microstrip vias and interconnects in dataset circuits[J]. IEEE Transactions on Microwave Theory and Techniques, 1996, 44(12): 2495--2503.
+
+\bibitem{watson1999kbann} P. M. Watson, K. C. Gupta, and R. L. Mahajan. Applications of knowledge-based artificial neural network modeling to microwave components[J]. International Journal of RF and Microwave Computer-Aided Engineering, 1999, 9(3): 254--260.
+
+\bibitem{wang1997kbnn} F. Wang and Q. J. Zhang. Knowledge-based neural models for microwave design[J]. IEEE Transactions on Microwave Theory and Techniques, 1997, 45(12): 2333--2343.
+
+\bibitem{jin2019deep} J. Jin, C. Zhang, F. Feng, et al. Deep neural network technique for high-dimensional microwave modeling and applications to parameter extraction of microwave filters[J]. IEEE Transactions on Microwave Theory and Techniques, 2019, 67(10): 4140--4155.
+
+\bibitem{feng2022ann} F. Feng, W. Na, J. Jin, et al. Artificial neural networks for microwave computer-aided design: the state of the art[J]. IEEE Transactions on Microwave Theory and Techniques, 2022, 70(11): 4597--4619.
+
+\bibitem{na2017unified} W. Na, F. Feng, C. Zhang, et al. A unified automated parametric modeling algorithm using knowledge-based neural network and L1 optimization[J]. IEEE Transactions on Microwave Theory and Techniques, 2017, 65(3): 729--745.
+
+\bibitem{simsek2010recent} M. Simsek, Q. J. Zhang, H. Kabir, et al. The recent developments in knowledge based neural modeling[J]. Procedia Computer Science, 2010, 1(1): 1321--1330.
+
+\bibitem{ojaroudi2018uwb} M. Ojaroudi, S. Bila, and F. Torres. A new approach of multi-parameter UWB antenna modeling based on knowledge-based artificial neural network[C]//EuCAP 2018. IET, 2018: 1--5.
+
+\bibitem{bandler2004space} J. W. Bandler, Q. S. Cheng, S. A. Dakroury, et al. Space mapping: the state of the art[J]. IEEE Transactions on Microwave Theory and Techniques, 2004, 52(1): 337--361.
+
+\bibitem{koziel2014antenna} S. Koziel and S. Ogurtsov. Antenna Design by Simulation-Driven Optimization[M]. Cham: Springer International Publishing, 2014.
+
+\bibitem{zhang2021parallel} W. Zhang, F. Feng, J. Jin, et al. Parallel multiphysics optimization for microwave devices exploiting neural network surrogate[J]. IEEE Microwave and Wireless Components Letters, 2021, 31(4): 341--344.
+
+\bibitem{zhang2021advanced} W. Zhang, F. Feng, W. Liu, et al. Advanced parallel space-mapping-based multiphysics optimization for high-power microwave filters[J]. IEEE Transactions on Microwave Theory and Techniques, 2021, 69(5): 2470--2484.
+
+\bibitem{yang2025multifidelity} X. Yang, Z. Wang, H. Hu, et al. Multifidelity space-mapping-based approach for accelerated multiphysics optimization of microwave devices[J]. IEEE Transactions on Microwave Theory and Techniques, 2025, 73(12): 9902--9919.
+
+\bibitem{gosal2016transmitarray} G. Gosal, E. Almajali, D. McNamara, et al. Transmitarray antenna design using forward and inverse neural network modeling[J]. IEEE Antennas and Wireless Propagation Letters, 2016, 15: 1483--1486.
+
+\bibitem{gadhafi2024dualband} R. Gadhafi, A. Copiaco, Y. Himeur, et al. Exploring the potential of deep-learning and machine-learning in dual-band antenna design[J]. IEEE Open Journal of the Computer Society, 2024, 5: 566--577.
+
+\bibitem{lin2025array} Y. L. Lin, D. Lu, L. Maman, et al. Optimization of antenna array configurations using deep learning[J]. IEEE Open Journal of Antennas and Propagation, 2025, 6(5): 1367--1374.
+
+\bibitem{shao2025movable} X. Shao, L. Hu, Y. Sun, et al. Hybrid near-far field 6D movable antenna design exploiting directional sparsity and deep learning[EB/OL]. arXiv:2506.15808, 2025.
+
+\bibitem{xiao2021inverse} L. Xiao, W. Shao, F. Jin, et al. Inverse artificial neural network for multiobjective antenna design[J]. IEEE Transactions on Antennas and Propagation, 2021, 69(10): 6651--6659.
+
+\bibitem{liu2022lens} Y. Liu, L. Peng, and W. Shao. An efficient knowledge-based artificial neural network for the design of circularly polarized 3-D-printed lens antenna[J]. IEEE Transactions on Antennas and Propagation, 2022, 70(7): 5007--5014.
+
+\bibitem{jin2011surrogate} Y. Jin. Surrogate-assisted evolutionary computation: recent advances and future challenges[J]. Swarm and Evolutionary Computation, 2011, 1(2): 61--70.
+
+\bibitem{liu2014efficient} B. Liu, H. Aliakbarian, Z. Ma, et al. An efficient method for antenna design optimization based on evolutionary computation and machine learning techniques[J]. IEEE Transactions on Antennas and Propagation, 2014, 62(1): 7--18.
+
+\bibitem{wu2024geometry} Q. Wu, W. Chen, C. Yu, et al. Machine-learning-assisted optimization for antenna geometry design[J]. IEEE Transactions on Antennas and Propagation, 2024, 72(3): 2083--2095.
+
+\bibitem{han2025windload} B. Han, Q. Wu, C. Yu, et al. Low-wind-load broadband dual-polarized antenna and array designs using sequential multiphysics machine-learning-assisted optimization[J]. IEEE Transactions on Antennas and Propagation, 2025, 73(1): 135--148.
+
+\bibitem{yang2025cnn} Y. Yang, W. Zhang, J. Jin, et al. A cross-channel parametric CNN framework for microwave topology modeling[J]. IEEE Transactions on Microwave Theory and Techniques, 2025(99): 1--17.
+
+\bibitem{an2021gan} S. An, B. Zheng, H. Tang, et al. Multifunctional metasurface design with a generative adversarial network[J]. Advanced Optical Materials, 2021, 9(5): 2001433.
+
+\bibitem{raissi2019pinn} M. Raissi, P. Perdikaris, and G. E. Karniadakis. Physics-informed neural networks: a deep learning framework for solving forward and inverse problems involving nonlinear partial differential equations[J]. Journal of Computational Physics, 2019, 378: 686--707.
+
+\bibitem{hu2022theory} Y. Hu, Y. Jin, X. Wu, et al. A theory-guided deep neural network for time domain electromagnetic simulation and inversion using a differentiable programming platform[J]. IEEE Transactions on Antennas and Propagation, 2022, 70(1): 767--772.
+
+\end{thebibliography}
+
+\end{document}
